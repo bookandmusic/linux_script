@@ -5,11 +5,11 @@ ARCH=x86_64
 COMMAND_PREX="sudo "
 
 GITHUB_PROXY=https://ghproxy.com/
-HOMEBREW_API_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles/api"
-HOMEBREW_BOTTLE_DOMAIN="https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles"
-HOMEBREW_BREW_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/brew.git"
-HOMEBREW_CORE_GIT_REMOTE="https://mirrors.tuna.tsinghua.edu.cn/git/homebrew/homebrew-core.git"
-HOMEBREW_PIP_INDEX_URL="https://pypi.tuna.tsinghua.edu.cn/simple"
+
+export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.ustc.edu.cn/brew.git"
+export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.ustc.edu.cn/homebrew-core.git"
+export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
+export HOMEBREW_API_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles/api"
 
 NVM_INSTALL_VERSION="0.39.5"
 NODE_VERSION="16.20.2"
@@ -89,14 +89,14 @@ function pre_start() {
 		echo "${COMMAND_PREX} yum makecache && ${COMMAND_PREX} yum install -y git curl wget zsh vim"
 		{
 			${COMMAND_PREX} yum makecache && ${COMMAND_PREX} yum install -y git curl wget zsh vim
-		} >/dev/null 2>&1
+		} 
 	elif [[ ${OS} == "Debian" ]]; then
 		echo "${COMMAND_PREX} sed -i 's@//.*archive.ubuntu.com@//mirrors.ustc.edu.cn@g' /etc/apt/sources.list && ${COMMAND_PREX} apt update && ${COMMAND_PREX} apt install -y sshpass ca-certificates git curl wget zsh vim"
 		{
 			${COMMAND_PREX} sed -i 's@//.*archive.ubuntu.com@//mirrors.ustc.edu.cn@g' /etc/apt/sources.list &&
 				${COMMAND_PREX} apt update &&
 				${COMMAND_PREX} apt install -y sshpass ca-certificates git curl wget zsh vim
-		} >/dev/null 2>&1
+		} 
 
 	fi
 	info "The already install required packages"
@@ -111,7 +111,7 @@ function final_clear() {
 			${COMMAND_PREX} apt-get clean &&
 				${COMMAND_PREX} rm -rf /var/lib/apt/lists/* &&
 				${COMMAND_PREX} rm -rf /src/*.deb
-		} >/dev/null 2>&1
+		} 
 
 		info "The clear complete"
 	fi
@@ -121,7 +121,7 @@ function config_localtime() {
 	if [ ! -f "/etc/localtime" ]; then
 		info "create /etc/localtime"
 		echo "${COMMAND_PREX} ln -svf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime"
-		${COMMAND_PREX} ln -svf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime >/dev/null 2>&1
+		${COMMAND_PREX} ln -svf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime 
 	fi
 }
 
@@ -145,22 +145,22 @@ function install_ohmyzsh() {
 	{
 		export REMOTE=${GITHUB_PROXY}https://github.com/ohmyzsh/ohmyzsh.git &&
 			echo "Y" | /bin/bash -c "$(curl -fsSL ${GITHUB_PROXY}https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-	} >/dev/null 2>&1
+	} 
 
 	echo "git clone ${GITHUB_PROXY}https://github.com/zsh-users/zsh-autosuggestions.git \${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions"
 	{
 		git clone ${GITHUB_PROXY}https://github.com/zsh-users/zsh-autosuggestions.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-	} >/dev/null 2>&1
+	} 
 
 	echo "git clone ${GITHUB_PROXY}https://github.com/zsh-users/zsh-syntax-highlighting.git \${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting"
 	{
 		git clone ${GITHUB_PROXY}https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-	} >/dev/null 2>&1
+	} 
 
 	echo "sed -i 's@plugins=(git)@plugins=(sudo git zsh-autosuggestions zsh-syntax-highlighting)@g' ~/.zshrc"
 	{
 		sed -i 's@plugins=(git)@plugins=(sudo git zsh-autosuggestions zsh-syntax-highlighting)@g' ~/.zshrc
-	} >/dev/null 2>&1
+	} 
 
 	info "The already install ohmyzsh"
 }
@@ -174,12 +174,11 @@ function install_homebrew() {
 	export HOMEBREW_BOTTLE_DOMAIN=${HOMEBREW_BOTTLE_DOMAIN}
 	export HOMEBREW_BREW_GIT_REMOTE=${HOMEBREW_BREW_GIT_REMOTE}
 	export HOMEBREW_CORE_GIT_REMOTE=${HOMEBREW_CORE_GIT_REMOTE}
-	export HOMEBREW_PIP_INDEX_URL=${HOMEBREW_PIP_INDEX_URL}
 
-	echo "echo | /bin/bash -c \"\$(curl -fsSL ${GITHUB_PROXY}https://raw.githubusercontent.com/Homebrew/install/master/install.sh)\""
+	echo "/bin/bash -c \"$(curl -fsSL https://mirrors.ustc.edu.cn/misc/brew-install.sh)\""
 	{
-		echo | /bin/bash -c "$(curl -fsSL ${GITHUB_PROXY}https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-	} >/dev/null 2>&1
+		/bin/bash -c "$(curl -fsSL https://mirrors.ustc.edu.cn/misc/brew-install.sh)"
+	} 
 
 	waring "config homebrew env"
 
@@ -194,12 +193,11 @@ function install_homebrew() {
 	echo "export HOMEBREW_CORE_GIT_REMOTE=${HOMEBREW_CORE_GIT_REMOTE}" | tee -a ~/.bashrc ~/.zshrc
 	echo "export HOMEBREW_API_DOMAIN=${HOMEBREW_API_DOMAIN}" | tee -a ~/.bashrc ~/.zshrc
 	echo "export HOMEBREW_BOTTLE_DOMAIN=${HOMEBREW_BOTTLE_DOMAIN}" | tee -a ~/.bashrc ~/.zshrc
-	echo "export HOMEBREW_PIP_INDEX_URL=${HOMEBREW_PIP_INDEX_URL}" | tee -a ~/.bashrc ~/.zshrc
 
-	if [[ ${OS} != "Mac" ]]; then
-		export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin/
-	elif [[ ${OS} == "Mac" && ${ARCH} == "arm64" ]]; then
+	if [[ ${OS} == "Mac" && ${ARCH} == "arm64" ]]; then
 		export PATH=$PATH:/opt/homebrew/bin/
+	else
+		export PATH=$PATH:/home/linuxbrew/.linuxbrew/bin/
 	fi
 
 	info "The already install ohmyzsh"
@@ -225,7 +223,7 @@ function install_starship() {
 			sed -i 's@confirm "Install Starship@# confirm "Install Starship@g' starship_install.sh &&
 			sh starship_install.sh &&
 			rm -rf starship_install.sh
-	} >/dev/null 2>&1
+	} 
 
 	waring "generate starship.toml"
 	echo "export PATH=$PATH:~/.local/bin && starship preset tokyo-night -o ~/.config/starship.toml"
@@ -247,17 +245,17 @@ function install_gvm() {
 		echo "brew update && brew install mercurial"
 		{
 			brew update && brew install mercurial
-		} >/dev/null 2>&1
+		} 
 	elif [[ ${OS} == "CentOS" ]]; then
 		echo "${COMMAND_PREX} yum install -y gcc bison make glibc-devel"
 		{
 			${COMMAND_PREX} yum install -y gcc bison make glibc-devel
-		} >/dev/null 2>&1
+		} 
 	elif [[ ${OS} == "Debian" ]]; then
 		echo "${COMMAND_PREX} apt update && ${COMMAND_PREX} apt install -y mercurial make binutils bison gcc build-essential bsdmainutils"
 		{
 			${COMMAND_PREX} apt update && ${COMMAND_PREX} apt install -y mercurial make binutils bison gcc build-essential bsdmainutils
-		} >/dev/null 2>&1
+		} 
 	fi
 
 	waring "execute gvm-installer"
@@ -266,7 +264,7 @@ function install_gvm() {
 	{
 		export SRC_REPO=${GITHUB_PROXY}https://github.com/moovweb/gvm.git &&
 			bash < <(curl -sSL ${GITHUB_PROXY}https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
-	} >/dev/null 2>&1
+	} 
 
 	waring "config gvm env"
 	echo "" | tee -a ~/.bashrc ~/.zshrc
@@ -284,13 +282,13 @@ function install_gvm() {
 	info "The already install gvm"
 
 	waring "clone go src repo to $HOME/.gvm/archive/go"
-	echo "git clone ${GITHUB_PROXY}https://github.com/golang/go.git \$HOME/.gvm/archive/go"
+	echo "git ${GITHUB_PROXY}https://github.com/golang/go.git \$HOME/.gvm/archive/go"
 	git clone ${GITHUB_PROXY}https://github.com/golang/go.git $HOME/.gvm/archive/go
 
 	waring "install go${GO_VERSION}"
 	{
 		gvm install go${GO_VERSION} -B && gvm use go${GO_VERSION} --default
-	} >/dev/null 2>&1
+	} 
 }
 
 function install_pyenv() {
@@ -300,31 +298,31 @@ function install_pyenv() {
 		echo "brew install openssl readline sqlite3 xz zlib tcl-tk"
 		{
 			brew install openssl readline sqlite3 xz zlib tcl-tk
-		} >/dev/null 2>&1
+		} 
 	elif [[ ${OS} == "CentOS" ]]; then
 		echo "${COMMAND_PREX} yum install -y gcc make patch zlib-devel bzip2 bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel"
 		{
 			${COMMAND_PREX} yum install -y gcc make patch zlib-devel bzip2 bzip2-devel \
 				readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel
-		} >/dev/null 2>&1
+		} 
 	elif [[ ${OS} == "Debian" ]]; then
 		echo "${COMMAND_PREX} apt update && ${COMMAND_PREX} apt install -y build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev curl libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev"
 		{
 			${COMMAND_PREX} apt update && ${COMMAND_PREX} apt install -y build-essential libssl-dev zlib1g-dev \
 				libbz2-dev libreadline-dev libsqlite3-dev curl \
 				libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
-		} >/dev/null 2>&1
+		} 
 	fi
 
 	echo "git clone ${GITHUB_PROXY}https://github.com/yyuu/pyenv.git ~/.pyenv"
 	{
 		git clone ${GITHUB_PROXY}https://github.com/yyuu/pyenv.git ~/.pyenv
-	} >/dev/null 2>&1
+	} 
 
 	echo "mkdir -p ~/.pyenv/plugins && git clone ${GITHUB_PROXY}https://github.com/pyenv/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv"
 	{
 		mkdir -p ~/.pyenv/plugins && git clone ${GITHUB_PROXY}https://github.com/pyenv/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
-	} >/dev/null 2>&1
+	} 
 
 	waring "config pyenv env"
 	echo "" | tee -a ~/.bashrc ~/.zshrc
@@ -351,7 +349,7 @@ function install_pyenv() {
 			pyenv global ${PYTHON_VERSION} &&
 			pip install -i ${PYPI_PROXY} pip -U &&
 			pip config set global.index-url ${PYPI_PROXY}
-	} >/dev/null 2>&1
+	} 
 }
 
 function install_nvm() {
@@ -360,7 +358,7 @@ function install_nvm() {
 	echo "git clone ${GITHUB_PROXY}https://github.com/nvm-sh/nvm.git ~/.nvm && git -C ~/.nvm checkout v${NVM_INSTALL_VERSION}"
 	{
 		git clone ${GITHUB_PROXY}https://github.com/nvm-sh/nvm.git ~/.nvm && git -C ~/.nvm checkout v${NVM_INSTALL_VERSION}
-	} >/dev/null 2>&1
+	} 
 
 	waring "config nvm env"
 	echo "" | tee -a ~/.bashrc ~/.zshrc
@@ -381,14 +379,14 @@ function install_nvm() {
 	info "install node ${NODE_VERSION}"
 	{
 		nvm install ${NODE_VERSION} && nvm alias default ${NODE_VERSION}
-	} >/dev/null 2>&1
+	} 
 
 	{
 		export PATH=$PATH:$HOME/.nvm/versions/node/v${NODE_VERSION}/bin &&
 			npm install --registry ${NPM_PROXY} -g yarn &&
 			npm config set registry ${NPM_PROXY} &&
 			yarn config set registry ${NPM_PROXY}
-	} >/dev/null 2>&1
+	} 
 }
 
 function main() {
